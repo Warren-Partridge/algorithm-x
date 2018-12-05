@@ -19,33 +19,47 @@ public class DancingLinks {
             // TODO: Stick on bottom of col by default?
         }
 
-        DataObject appendToRow() {
-            // TODO
+        DataObject appendToRow(DataObject newDO) { // Append new DO to the right and return it
+            this.R.L = newDO;
+            newDO.L = this;
+            newDO.R = this.R;
+            this.R = newDO;
+
+            return newDO;
         }
 
-        DataObject appendToColumn() {
-            // TODO
+        DataObject appendToColumn(DataObject newDO) { // Append new DO below and return it
+            this.D.U = newDO;
+            newDO.U = this;
+            newDO.D = this.D;
+            this.D = newDO;
+
+            return newDO;
         }
 
         void unlinkFromRow() {
-            // TODO
+            this.L.R = this.R;
+            this.R.L = this.L;
         }
 
         void relinkToRow() {
-            // tODO
+            this.L.R = this.R.L = this;
         }
 
         void unlinkFromColumn() {
-            // TODO
+            this.U.D = this.D;
+            this.D.U = this.U;
         }
 
         void relinkToColumn() {
-            // TODO
+            this.U.D = this.D.U = this;
         }
 
     }
 
     class ColumnObject extends DancingLinks {
+//        DataObject L, R, U, D;
+//        ColumnObject C;
         String name;
         int size; // Number of 1s in the column
 
@@ -55,6 +69,9 @@ public class DancingLinks {
             name = initName;
             size = 0;
         }
+
+
+
     }
 
 
