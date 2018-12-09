@@ -6,11 +6,11 @@
 
 public class DancingLinks {
     class DataObject {
-        DataObject L, R, U, D;
+        DataObject left, right, up, down;
         ColumnObject C; // Knuth calls this property a "list header" in his paper but I am conflating the two objects into one for simplicity
 
         DataObject() {
-            L = R = U = D = this;
+            left = right = up = down = this;
         }
 
         DataObject(ColumnObject initC) {
@@ -20,54 +20,62 @@ public class DancingLinks {
         }
 
         DataObject appendToRow(DataObject newDO) { // Append new DO to the right and return it
-            this.R.L = newDO;
-            newDO.L = this;
-            newDO.R = this.R;
-            this.R = newDO;
+            this.right.left = newDO;
+            newDO.left = this;
+            newDO.right = this.right;
+            this.right = newDO;
 
             return newDO;
         }
 
         DataObject appendToColumn(DataObject newDO) { // Append new DO below and return it
-            this.D.U = newDO;
-            newDO.U = this;
-            newDO.D = this.D;
-            this.D = newDO;
+            this.down.up = newDO;
+            newDO.up = this;
+            newDO.down = this.down;
+            this.down = newDO;
 
             return newDO;
         }
 
         void unlinkFromRow() {
-            this.L.R = this.R;
-            this.R.L = this.L;
+            this.left.right = this.right;
+            this.right.left = this.left;
         }
 
         void relinkToRow() {
-            this.L.R = this.R.L = this;
+            this.left.right = this.right.left = this;
         }
 
         void unlinkFromColumn() {
-            this.U.D = this.D;
-            this.D.U = this.U;
+            this.up.down = this.down;
+            this.down.up = this.up;
         }
 
         void relinkToColumn() {
-            this.U.D = this.D.U = this;
+            this.up.down = this.down.up = this;
         }
 
     }
 
-    class ColumnObject extends DancingLinks {
-//        DataObject L, R, U, D;
+    class ColumnObject extends DataObject {
+//        DataObject left, right, up, down;
 //        ColumnObject C;
         String name;
         int size; // Number of 1s in the column
 
         ColumnObject(String initName) {
-            super(); // Inherit L,R,U,D,C from dataobject
+            super(); // Inherit left,right,up,down,C from dataobject
             C = this;
             name = initName;
             size = 0;
+        }
+
+        void cover() {
+            // TODO
+        }
+
+        void uncover() {
+            // TODO
         }
 
 
@@ -75,10 +83,78 @@ public class DancingLinks {
     }
 
 
+    private ColumnObject root; // Special column object, labeled "h" in the paper
+    private List<DancingNode> solutions;
+    private int numSolutionsFound = 0;
 
-    public void search() { // Deterministic algorithm to find all exact covers
-        // TODO
+    private void search(int K) { // Deterministic algorithm to find all exact covers
+
+        if (root.right == root) {
+            numSolutionsFound++;
+
+            // TODO: Print the current solution
+
+            return;
+        }
+
+        ColumnObject c = getSmallestColumnObject();
+        c.cover();
+
+        for (DataObject r = c.down; r != c; r = r.down) {
+            solutions.add(r);
+
+            for (DataObject j = r.right; j != r; j = j.right) {
+                j.C.cover();
+            }
+
+            search(K + 1);
+
+            r = solutions.remove(solutions.size() - 1);
+            c = r.C;
+
+            for (DataObject j = r.left; j != r; j = j.left) {
+                j.C.uncover();
+            }
+        }
+
+        c.uncover();
+
+        return;
+
+        // Pseudocode from the paper:
+
+//        If R[h] = h, print the current solution (see below) and return.
+//        Otherwise choose a column object c (see below).
+//        Cover column c (see below).
+//        For each r ← D[c], D[D[c]], ... , while r != c,
+//          set Ok ← r;
+//          for each j ← R[r], R[R[r]], ... , while j != r,
+//            cover column j (see below);
+//          search(k + 1);
+//          set r ← Ok and c ← C[r];
+//          for each j ← L[r], L[L[r]], ... , while j != r,
+//            uncover column j (see below).
+//        Uncover column c (see below) and return.
     }
 
+
+
+
+
+
+    private ColumnObject getSmallestColumnObject() {
+        int min = Integer.MAX_VALUE;
+        ColumnObject smallestCO = null;
+
+        // Search for the min size CO by iterating through all COs by moving right until we end up back at the header
+        for (ColumnObject col = (ColumnObject) header.right; col != header; col = (ColumnObject) col.right) {
+            if (col.size < min) {
+                min = col.size;
+                smallestCO = col;
+            }
+        }
+
+        return smallestCO;
+    }
 
 }
