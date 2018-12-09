@@ -49,10 +49,12 @@ public class DancingLinks {
         void unlinkFromColumn() {
             this.up.down = this.down;
             this.down.up = this.up;
+            this.C.size--;
         }
 
         void relinkToColumn() {
             this.up.down = this.down.up = this;
+            this.C.size++;
         }
 
     }
@@ -71,24 +73,33 @@ public class DancingLinks {
         }
 
         void cover() {
-            // TODO
+            this.unlinkFromRow();
+
+            for (DancingNode i = this.down; i != this.C; i = i.down) {
+                for (DancingNode j = i.right; j != i; j = j.right) {
+                    j.unlinkFromColumn();
+                }
+            }
         }
 
         void uncover() {
-            // TODO
+            for (DancingNode i = this.up; i != this.C; i = i.up) {
+                for (DancingNode j = i.left; j != i; j = j.left) {
+                    j.relinkToColumn();
+                }
+            }
+
+            this.relinkToRow();
         }
-
-
 
     }
 
 
-    private ColumnObject root; // Special column object, labeled "h" in the paper
+    private ColumnObject root; // Special CO, labeled "h" in the paper
     private List<DancingNode> solutions;
     private int numSolutionsFound = 0;
 
     private void search(int K) { // Deterministic algorithm to find all exact covers
-
         if (root.right == root) {
             numSolutionsFound++;
 
@@ -108,7 +119,6 @@ public class DancingLinks {
             }
 
             search(K + 1);
-
             r = solutions.remove(solutions.size() - 1);
             c = r.C;
 
